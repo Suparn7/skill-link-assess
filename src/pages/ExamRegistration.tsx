@@ -7,6 +7,11 @@ import { Header } from "@/components/layout/Header";
 import { RegistrationStepper } from "@/components/registration/RegistrationStepper";
 import { ProtectedRoute } from "@/components/registration/ProtectedRoute";
 import { PersonalInfoForm } from "@/pages/PersonalInfoForm";
+import { OtherDetailsForm } from "@/pages/OtherDetailsForm";
+import { ExperienceInfoForm } from "@/pages/ExperienceInfoForm";
+import { UploadDocumentsForm } from "@/pages/UploadDocumentsForm";
+import { PaymentInfoForm } from "@/pages/PaymentInfoForm";
+import { FinalReviewForm } from "@/pages/FinalReviewForm";
 import { useRegistrationData } from "@/hooks/useRegistrationData";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -151,43 +156,50 @@ export function ExamRegistration() {
         );
       case 2:
         return (
-          <div className="text-center py-12">
-            <GraduationCap className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Education Information</h3>
-            <p className="text-muted-foreground">Coming soon...</p>
-          </div>
+          <OtherDetailsForm
+            data={data.personalInfo as any}
+            onChange={handlePersonalInfoChange}
+            onBack={handlePrevious}
+            onNext={handleNext}
+            isLoading={saving}
+          />
         );
       case 3:
         return (
-          <div className="text-center py-12">
-            <Briefcase className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Experience Information</h3>
-            <p className="text-muted-foreground">Coming soon...</p>
-          </div>
+          <ExperienceInfoForm
+            data={data.experienceInfo as any}
+            onChange={(field, value) => updateLocalData('experienceInfo', value)}
+            onBack={handlePrevious}
+            onNext={handleNext}
+          />
         );
       case 4:
         return (
-          <div className="text-center py-12">
-            <Upload className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Document Upload</h3>
-            <p className="text-muted-foreground">Coming soon...</p>
-          </div>
+          <UploadDocumentsForm
+            data={data.personalInfo as any}
+            onChange={handlePersonalInfoChange}
+            onSubmit={handleNext}
+          />
         );
       case 5:
         return (
-          <div className="text-center py-12">
-            <CreditCard className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Payment</h3>
-            <p className="text-muted-foreground">Coming soon...</p>
-          </div>
+          <PaymentInfoForm
+            data={data.personalInfo as any}
+            onProceed={handleNext}
+          />
         );
       case 6:
         return (
-          <div className="text-center py-12">
-            <FileCheck className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Final Review</h3>
-            <p className="text-muted-foreground">Coming soon...</p>
-          </div>
+          <FinalReviewForm
+            data={{...data.personalInfo, ...data.applicationInfo}}
+            onSubmit={() => {
+              toast({
+                title: "Application Submitted!",
+                description: "Your exam registration has been submitted successfully."
+              });
+              // Navigate to dashboard or success page
+            }}
+          />
         );
       default:
         return null;
