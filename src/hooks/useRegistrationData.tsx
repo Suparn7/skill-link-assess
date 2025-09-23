@@ -1,0 +1,301 @@
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './useAuth';
+import { useToast } from './use-toast';
+
+export interface PersonalInfoData {
+  first_name?: string;
+  middle_name?: string;
+  last_name?: string;
+  father_name?: string;
+  mother_name?: string;
+  date_of_birth?: string;
+  gender?: 'male' | 'female' | 'other';
+  category?: 'general' | 'obc' | 'sc' | 'st' | 'ews';
+  aadhar_number?: string;
+  address?: string;
+  state?: string;
+  district?: string;
+  pincode?: string;
+  alternative_mobile?: string;
+}
+
+export interface EducationData {
+  qualification_type: string;
+  board_university: string;
+  passing_year: number;
+  percentage: number;
+  grade: string;
+  roll_number: string;
+  subjects: string;
+}
+
+export interface ExperienceData {
+  company_name: string;
+  designation: string;
+  from_date: string;
+  to_date: string;
+  is_current: boolean;
+  salary: number;
+  job_description: string;
+}
+
+export interface ApplicationData {
+  post_id?: string;
+  application_number?: string;
+  status?: 'draft' | 'submitted' | 'rejected' | 'payment_pending' | 'payment_completed' | 'document_pending' | 'completed';
+}
+
+export interface RegistrationData {
+  personalInfo: Partial<PersonalInfoData>;
+  educationInfo: EducationData[];
+  experienceInfo: ExperienceData[];
+  applicationInfo: Partial<ApplicationData>;
+  completedSteps: number[];
+}
+
+export function useRegistrationData() {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  
+  const [data, setData] = useState<RegistrationData>({
+    personalInfo: {},
+    educationInfo: [],
+    experienceInfo: [],
+    applicationInfo: {},
+    completedSteps: []
+  });
+  
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  // Load existing data on mount
+  useEffect(() => {
+    if (user?.id) {
+      loadRegistrationData();
+    }
+  }, [user?.id]);
+
+  const loadRegistrationData = useCallback(async () => {
+    if (!user?.id) return;
+    
+    setLoading(true);
+    try {
+      // Load personal info
+      const { data: personalData } = await supabase
+        .from('personal_info')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      // Load education data
+      const { data: educationData } = await supabase
+        .from('educational_qualifications')
+        .select('*')
+        .eq('user_id', user.id);
+
+      // Load experience data
+      const { data: experienceData } = await supabase
+        .from('experience_info')
+        .select('*')
+        .eq('user_id', user.id);
+
+      // Load application data
+      const { data: applicationData } = await supabase
+        .from('applications')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      // Determine completed steps based on data
+      const completedSteps: number[] = [];
+      if (personalData) completedSteps.push(1);
+      if (educationData && educationData.length > 0) completedSteps.push(2);
+      if (experienceData && experienceData.length > 0) completedSteps.push(3);
+      // Add more step logic as needed
+
+      setData({
+        personalInfo: personalData || {},
+        educationInfo: educationData || [],
+        experienceInfo: experienceData || [],
+        applicationInfo: applicationData || {},
+        completedSteps
+      });
+    } catch (error) {
+      console.error('Error loading registration data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load your registration data",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.id, toast]);
+
+  const savePersonalInfo = useCallback(async (personalInfo: Partial<PersonalInfoData>) => {
+    if (!user?.id) return false;
+    
+    setSaving(true);
+    try {
+      const dataToSave = {
+        ...personalInfo,
+        user_id: user.id,
+        address: personalInfo.address || '',
+        date_of_birth: personalInfo.date_of_birth || '',
+        district: personalInfo.district || '',
+        father_name: personalInfo.father_name || '',
+        mother_name: personalInfo.mother_name || '',
+        first_name: personalInfo.first_name || '',
+        last_name: personalInfo.last_name || '',
+        gender: personalInfo.gender || 'male' as const,
+        category: personalInfo.category || 'general' as const,
+        state: personalInfo.state || 'Jharkhand',
+        pincode: personalInfo.pincode || ''
+      };
+
+      const { error } = await supabase
+        .from('personal_info')
+        .upsert(dataToSave);
+
+      if (error) throw error;
+
+      setData(prev => ({
+        ...prev,
+        personalInfo,
+        completedSteps: Array.from(new Set([...prev.completedSteps, 1]))
+      }));
+
+      toast({
+        title: "Success",
+        description: "Personal information saved successfully"
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error saving personal info:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save personal information",
+        variant: "destructive"
+      });
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  }, [user?.id, toast]);
+
+  const saveEducationInfo = useCallback(async (educationInfo: EducationData[]) => {
+    if (!user?.id) return false;
+    
+    setSaving(true);
+    try {
+      // Delete existing records
+      await supabase
+        .from('educational_qualifications')
+        .delete()
+        .eq('user_id', user.id);
+
+      // Insert new records
+      const educationWithUserId = educationInfo.map(edu => ({
+        ...edu,
+        user_id: user.id
+      }));
+
+      const { error } = await supabase
+        .from('educational_qualifications')
+        .insert(educationWithUserId);
+
+      if (error) throw error;
+
+      setData(prev => ({
+        ...prev,
+        educationInfo,
+        completedSteps: Array.from(new Set([...prev.completedSteps, 2]))
+      }));
+
+      toast({
+        title: "Success",
+        description: "Education information saved successfully"
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error saving education info:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save education information",
+        variant: "destructive"
+      });
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  }, [user?.id, toast]);
+
+  const saveExperienceInfo = useCallback(async (experienceInfo: ExperienceData[]) => {
+    if (!user?.id) return false;
+    
+    setSaving(true);
+    try {
+      // Delete existing records
+      await supabase
+        .from('experience_info')
+        .delete()
+        .eq('user_id', user.id);
+
+      // Insert new records
+      const experienceWithUserId = experienceInfo.map(exp => ({
+        ...exp,
+        user_id: user.id
+      }));
+
+      const { error } = await supabase
+        .from('experience_info')
+        .insert(experienceWithUserId);
+
+      if (error) throw error;
+
+      setData(prev => ({
+        ...prev,
+        experienceInfo,
+        completedSteps: Array.from(new Set([...prev.completedSteps, 3]))
+      }));
+
+      toast({
+        title: "Success",
+        description: "Experience information saved successfully"
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error saving experience info:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save experience information",
+        variant: "destructive"
+      });
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  }, [user?.id, toast]);
+
+  const updateLocalData = useCallback((section: keyof RegistrationData, newData: any) => {
+    setData(prev => ({
+      ...prev,
+      [section]: newData
+    }));
+  }, []);
+
+  return {
+    data,
+    loading,
+    saving,
+    savePersonalInfo,
+    saveEducationInfo,
+    saveExperienceInfo,
+    updateLocalData,
+    loadRegistrationData
+  };
+}

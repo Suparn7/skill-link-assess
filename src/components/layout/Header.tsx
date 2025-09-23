@@ -98,6 +98,11 @@ export function Header() {
                     Dashboard
                   </Button>
                 </Link>
+                <Link to="/register">
+                  <Button variant={isActive('/register') ? "default" : "ghost"} size="sm" className={isActive('/register') ? "bg-gradient-primary" : "glass-nav"}>
+                    Register
+                  </Button>
+                </Link>
                 <Button variant="ghost" size="sm" onClick={signOut}>
                   Logout
                 </Button>

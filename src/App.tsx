@@ -21,6 +21,8 @@ import { AdminDashboard } from "./pages/AdminDashboard";
 import { DocumentsUpload } from "./pages/DocumentsUpload";
 import { Payment } from "./pages/Payment";
 import { FinalPreview } from "./pages/FinalPreview";
+import { ExamRegistration } from "./pages/ExamRegistration";
+import { EnhancedAuth } from "./pages/EnhancedAuth";
 import { AuthProvider } from "@/hooks/useAuth";
 
 const queryClient = new QueryClient();
@@ -46,8 +48,8 @@ const App = () => (
             <Route path="/" element={<HomePage />} />
             <Route path="/important-dates" element={<ImportantDates />} />
             <Route path="/how-to-apply" element={<HowToApply />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/auth" element={<Auth />} />
+            <Route path="/register" element={<ExamRegistration />} />
+            <Route path="/auth" element={<EnhancedAuth />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/personal-info" element={<PersonalInfo />} />
