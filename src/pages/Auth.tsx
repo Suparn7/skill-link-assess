@@ -71,11 +71,28 @@ export function Auth() {
   const handleSignIn = async (data: SignInForm) => {
     setIsLoading(true);
     const { error } = await signIn(data.email, data.password);
-    
+
     if (error) {
+      // local fallback: check sla_users
+      try {
+        const usersRaw = localStorage.getItem('sla_users');
+        if (usersRaw) {
+          const users = JSON.parse(usersRaw);
+          const found = users.find((u: any) => u.email === data.email && u.password === data.password);
+          if (found) {
+            toast({ title: "Success", description: "Signed in (local)" });
+            // store simple current user
+            localStorage.setItem('sla_current_user', JSON.stringify({ id: found.regNumber, email: found.email }));
+            navigate("/dashboard");
+            setIsLoading(false);
+            return;
+          }
+        }
+      } catch (e) {}
+
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || 'Sign in failed',
         variant: "destructive"
       });
     } else {
@@ -90,14 +107,21 @@ export function Auth() {
 
   const handleSignUp = async (data: SignUpForm) => {
     setIsLoading(true);
-    const { error } = await signUp(data.email, data.password);
-    
+    const { error } = await signUp(data.email, data.password).catch(e => ({ error: e }));
+
     if (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive"
-      });
+      // fallback: create local user entry with generated regNumber/password
+      try {
+        const regNumber = `REG${Date.now().toString().slice(-6)}`;
+        const usersRaw = localStorage.getItem('sla_users') || '[]';
+        const users = JSON.parse(usersRaw);
+        users.push({ regNumber, email: data.email, password: data.password });
+        localStorage.setItem('sla_users', JSON.stringify(users));
+        toast({ title: "Success (local)", description: `Account created. Reg: ${regNumber}` });
+        setActiveTab("signin");
+      } catch (e) {
+        toast({ title: "Error", description: 'Sign up failed', variant: 'destructive' });
+      }
     } else {
       toast({
         title: "Success",
@@ -152,14 +176,10 @@ export function Auth() {
           <Card className="glass-card">
             <CardContent className="p-6">
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-3 mb-6">
+                <TabsList className="grid w-full grid-cols-2 mb-6">
                   <TabsTrigger value="signin" className="flex items-center gap-2">
                     <User className="h-4 w-4" />
                     Login
-                  </TabsTrigger>
-                  <TabsTrigger value="signup" className="flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    Register
                   </TabsTrigger>
                   <TabsTrigger value="admin" className="flex items-center gap-2">
                     <Shield className="h-4 w-4" />
@@ -222,71 +242,6 @@ export function Auth() {
                       </Link>
                     </p>
                   </div>
-                </TabsContent>
-
-                <TabsContent value="signup">
-                  <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-email">Email</Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="signup-email"
-                          type="email"
-                          placeholder="Enter your email"
-                          className="pl-10 form-glass"
-                          {...signUpForm.register("email")}
-                        />
-                      </div>
-                      {signUpForm.formState.errors.email && (
-                        <p className="text-sm text-destructive">{signUpForm.formState.errors.email.message}</p>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-password">Password</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="signup-password"
-                          type="password"
-                          placeholder="Enter your password"
-                          className="pl-10 form-glass"
-                          {...signUpForm.register("password")}
-                        />
-                      </div>
-                      {signUpForm.formState.errors.password && (
-                        <p className="text-sm text-destructive">{signUpForm.formState.errors.password.message}</p>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="confirm-password">Confirm Password</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="confirm-password"
-                          type="password"
-                          placeholder="Confirm your password"
-                          className="pl-10 form-glass"
-                          {...signUpForm.register("confirmPassword")}
-                        />
-                      </div>
-                      {signUpForm.formState.errors.confirmPassword && (
-                        <p className="text-sm text-destructive">{signUpForm.formState.errors.confirmPassword.message}</p>
-                      )}
-                    </div>
-
-                    <Button 
-                      type="submit" 
-                      disabled={isLoading}
-                      variant="success"
-                      className="w-full"
-                    >
-                      {isLoading ? "Creating account..." : "Create Account"}
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </form>
                 </TabsContent>
 
                 <TabsContent value="admin">

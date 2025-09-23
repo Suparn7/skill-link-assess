@@ -50,6 +50,19 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setLoading(false);
     });
 
+    // If no supabase session, try to restore a local session (fallback for local dev/offline)
+    try {
+      const local = localStorage.getItem('sla_current_user');
+      if (!session && local) {
+        // simple shape: { id: string, email?: string }
+        const parsed = JSON.parse(local);
+        setUser(parsed as unknown as User);
+        setSession(null);
+        setLoading(false);
+      }
+    } catch (e) {
+      // ignore
+    }
     return () => subscription.unsubscribe();
   }, []);
 

@@ -4,10 +4,14 @@ import { LanguageToggle } from "@/components/ui/language-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Phone, Mail } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 export function Header() {
   const { t } = useTranslation();
   const location = useLocation();
+  const { user, loading, signOut } = useAuth();
+  // Example: check if user is admin (replace with your logic)
+  const isAdmin = user?.role === "admin" || user?.email?.endsWith("@admin.com");
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -80,6 +84,37 @@ export function Header() {
                 {t('nav.howToApply')}
               </Button>
             </Link>
+            {!loading && !user && (
+              <Link to="/auth">
+                <Button variant={isActive('/auth') ? "default" : "ghost"} size="sm" className={isActive('/auth') ? "bg-gradient-primary" : "glass-nav"}>
+                  Login
+                </Button>
+              </Link>
+            )}
+            {!loading && user && !isAdmin && (
+              <>
+                <Link to="/dashboard">
+                  <Button variant={isActive('/dashboard') ? "default" : "ghost"} size="sm" className={isActive('/dashboard') ? "bg-gradient-primary" : "glass-nav"}>
+                    Dashboard
+                  </Button>
+                </Link>
+                <Button variant="ghost" size="sm" onClick={signOut}>
+                  Logout
+                </Button>
+              </>
+            )}
+            {!loading && user && isAdmin && (
+              <>
+                <Link to="/admin">
+                  <Button variant={isActive('/admin') ? "default" : "ghost"} size="sm" className={isActive('/admin') ? "bg-gradient-primary" : "glass-nav"}>
+                    Admin Panel
+                  </Button>
+                </Link>
+                <Button variant="ghost" size="sm" onClick={signOut}>
+                  Logout
+                </Button>
+              </>
+            )}
             <LanguageToggle />
           </nav>
         </div>

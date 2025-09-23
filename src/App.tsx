@@ -12,6 +12,16 @@ import { ImportantDates } from "./pages/ImportantDates";
 import { HowToApply } from "./pages/HowToApply";
 import { Register } from "./pages/Register";
 import NotFound from "./pages/NotFound";
+import { Dashboard } from "./pages/Dashboard";
+import { PersonalInfo } from "./pages/PersonalInfo";
+import { Education } from "./pages/Education";
+import { Experience } from "./pages/Experience";
+import { Auth } from "./pages/Auth";
+import { AdminDashboard } from "./pages/AdminDashboard";
+import { DocumentsUpload } from "./pages/DocumentsUpload";
+import { Payment } from "./pages/Payment";
+import { FinalPreview } from "./pages/FinalPreview";
+import { AuthProvider } from "@/hooks/useAuth";
 
 const queryClient = new QueryClient();
 
@@ -25,7 +35,8 @@ const LoadingSpinner = () => (
 );
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
+  <AuthProvider>
+    <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -36,6 +47,15 @@ const App = () => (
             <Route path="/important-dates" element={<ImportantDates />} />
             <Route path="/how-to-apply" element={<HowToApply />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/personal-info" element={<PersonalInfo />} />
+            <Route path="/education" element={<Education />} />
+            <Route path="/experience" element={<Experience />} />
+            <Route path="/documents-upload" element={<DocumentsUpload />} />
+            <Route path="/payment" element={<Payment />} />
+            <Route path="/final-preview" element={<FinalPreview />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
@@ -43,6 +63,7 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
+  </AuthProvider>
 );
 
 export default App;
