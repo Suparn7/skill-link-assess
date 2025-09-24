@@ -196,17 +196,25 @@ export function useRegistrationData() {
         .delete()
         .eq('user_id', user.id);
 
-      // Insert new records
-      const educationWithUserId = educationInfo.map(edu => ({
-        ...edu,
-        user_id: user.id
-      }));
+      // Insert new records if any
+      if (educationInfo.length > 0) {
+        const educationWithUserId = educationInfo.map(edu => ({
+          user_id: user.id,
+          qualification_type: edu.qualification_type || '',
+          board_university: edu.board_university || '',
+          passing_year: edu.passing_year || new Date().getFullYear(),
+          percentage: edu.percentage || null,
+          grade: edu.grade || null,
+          subjects: edu.subjects || null,
+          roll_number: edu.roll_number || null
+        }));
 
-      const { error } = await supabase
-        .from('educational_qualifications')
-        .insert(educationWithUserId);
+        const { error } = await supabase
+          .from('educational_qualifications')
+          .insert(educationWithUserId);
 
-      if (error) throw error;
+        if (error) throw error;
+      }
 
       setData(prev => ({
         ...prev,
@@ -244,17 +252,25 @@ export function useRegistrationData() {
         .delete()
         .eq('user_id', user.id);
 
-      // Insert new records
-      const experienceWithUserId = experienceInfo.map(exp => ({
-        ...exp,
-        user_id: user.id
-      }));
+      // Insert new records if any
+      if (experienceInfo.length > 0) {
+        const experienceWithUserId = experienceInfo.map(exp => ({
+          user_id: user.id,
+          company_name: exp.company_name || '',
+          designation: exp.designation || '',
+          from_date: exp.from_date || new Date().toISOString().split('T')[0],
+          to_date: exp.is_current ? null : (exp.to_date || new Date().toISOString().split('T')[0]),
+          is_current: exp.is_current || false,
+          salary: exp.salary || null,
+          job_description: exp.job_description || null
+        }));
 
-      const { error } = await supabase
-        .from('experience_info')
-        .insert(experienceWithUserId);
+        const { error } = await supabase
+          .from('experience_info')
+          .insert(experienceWithUserId);
 
-      if (error) throw error;
+        if (error) throw error;
+      }
 
       setData(prev => ({
         ...prev,

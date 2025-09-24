@@ -76,7 +76,7 @@ export function ExamRegistration() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  const { data, loading, saving, savePersonalInfo, updateLocalData } = useRegistrationData();
+  const { data, loading, saving, savePersonalInfo, saveEducationInfo, saveExperienceInfo, updateLocalData } = useRegistrationData();
   
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -111,8 +111,10 @@ export function ExamRegistration() {
   const handleNext = async () => {
     if (currentStep < 6) {
       // Save current step data before proceeding
-      await handleSaveCurrentStep();
-      setCurrentStep(prev => prev + 1);
+      const saveSuccess = await handleSaveCurrentStep();
+      if (saveSuccess) {
+        setCurrentStep(prev => prev + 1);
+      }
     }
   };
 
@@ -123,17 +125,25 @@ export function ExamRegistration() {
   };
 
   const handleSaveCurrentStep = async () => {
-    switch (currentStep) {
-      case 1:
-        return await savePersonalInfo(data.personalInfo);
-      case 2:
-        // Implement education save
-        return true;
-      case 3:
-        // Implement experience save
-        return true;
-      default:
-        return true;
+    try {
+      switch (currentStep) {
+        case 1:
+          return await savePersonalInfo(data.personalInfo);
+        case 2:
+          return await saveEducationInfo(data.educationInfo);
+        case 3:
+          return await saveExperienceInfo(data.experienceInfo);
+        default:
+          return true;
+      }
+    } catch (error) {
+      console.error('Error saving step:', error);
+      toast({
+        title: "Error Saving Data",
+        description: "Please try again",
+        variant: "destructive"
+      });
+      return false;
     }
   };
 
@@ -218,7 +228,7 @@ export function ExamRegistration() {
   }
 
   return (
-    <ProtectedRoute>
+    <ProtectedRoute requirePhoneVerification={true}>
       <div className="min-h-screen bg-background">
         <Header />
         

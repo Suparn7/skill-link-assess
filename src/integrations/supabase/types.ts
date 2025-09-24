@@ -300,6 +300,45 @@ export type Database = {
         }
         Relationships: []
       }
+      phone_otps: {
+        Row: {
+          attempts: number
+          code: string
+          created_at: string
+          expires_at: string
+          id: string
+          mobile: string
+          purpose: string
+          updated_at: string
+          used: boolean
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          code: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          mobile: string
+          purpose?: string
+          updated_at?: string
+          used?: boolean
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          code?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          mobile?: string
+          purpose?: string
+          updated_at?: string
+          used?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       posts: {
         Row: {
           application_fee: number | null
@@ -352,6 +391,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           mobile_number: string | null
+          phone_verified: boolean
           role: Database["public"]["Enums"]["user_role"] | null
           updated_at: string
           user_id: string
@@ -362,6 +402,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           mobile_number?: string | null
+          phone_verified?: boolean
           role?: Database["public"]["Enums"]["user_role"] | null
           updated_at?: string
           user_id: string
@@ -372,6 +413,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           mobile_number?: string | null
+          phone_verified?: boolean
           role?: Database["public"]["Enums"]["user_role"] | null
           updated_at?: string
           user_id?: string

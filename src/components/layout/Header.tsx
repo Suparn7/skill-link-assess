@@ -98,6 +98,11 @@ export function Header() {
                     Dashboard
                   </Button>
                 </Link>
+                <Link to="/verify-phone">
+                  <Button variant={isActive('/verify-phone') ? "default" : "ghost"} size="sm" className={isActive('/verify-phone') ? "bg-gradient-primary" : "glass-nav"}>
+                    Verify Phone
+                  </Button>
+                </Link>
                 <Link to="/register">
                   <Button variant={isActive('/register') ? "default" : "ghost"} size="sm" className={isActive('/register') ? "bg-gradient-primary" : "glass-nav"}>
                     Register

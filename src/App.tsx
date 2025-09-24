@@ -23,6 +23,7 @@ import { Payment } from "./pages/Payment";
 import { FinalPreview } from "./pages/FinalPreview";
 import { ExamRegistration } from "./pages/ExamRegistration";
 import { EnhancedAuth } from "./pages/EnhancedAuth";
+import { PhoneVerification } from "./pages/PhoneVerification";
 import { AuthProvider } from "@/hooks/useAuth";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/" element={<HomePage />} />
             <Route path="/important-dates" element={<ImportantDates />} />
             <Route path="/how-to-apply" element={<HowToApply />} />
+            <Route path="/verify-phone" element={<PhoneVerification />} />
             <Route path="/register" element={<ExamRegistration />} />
             <Route path="/auth" element={<EnhancedAuth />} />
             <Route path="/dashboard" element={<Dashboard />} />
