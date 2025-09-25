@@ -23,6 +23,8 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { CandidateManagement } from "@/components/admin/CandidateManagement";
+import { ApplicationManagement } from "@/components/admin/ApplicationManagement";
 
 interface DashboardStats {
   totalApplications: number;
@@ -307,37 +309,11 @@ export function AdminDashboard() {
             </TabsContent>
 
             <TabsContent value="candidates" className="mt-6">
-              <Card className="glass-card">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    Candidate Management
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8">
-                    <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground">Candidate management features coming soon</p>
-                  </div>
-                </CardContent>
-              </Card>
+              <CandidateManagement />
             </TabsContent>
 
             <TabsContent value="applications" className="mt-6">
-              <Card className="glass-card">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="h-5 w-5" />
-                    Application Management
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8">
-                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground">Application management features coming soon</p>
-                  </div>
-                </CardContent>
-              </Card>
+              <ApplicationManagement />
             </TabsContent>
 
             <TabsContent value="payments" className="mt-6">
