@@ -35,15 +35,18 @@ export interface PersonalInfoData {
   correspondenceDistrict: string;
   correspondencePin: string;
   sameAsPermanent: boolean;
+  post_id?: string;
 }
 
 interface Props {
   data: PersonalInfoData;
   onChange: (field: keyof PersonalInfoData, value: any) => void;
   onNext: () => void;
+  posts?: Array<{ id: string; post_name: string }>;
+  postsLoading?: boolean;
 }
 
-export const PersonalInfoForm: React.FC<Props> = ({ data, onChange, onNext }) => {
+export const PersonalInfoForm: React.FC<Props> = ({ data, onChange, onNext, posts = [], postsLoading = false }) => {
   return (
     <form className="form-container">
       {/* Basic Information */}
@@ -58,6 +61,24 @@ export const PersonalInfoForm: React.FC<Props> = ({ data, onChange, onNext }) =>
           Basic Information
         </div>
         <div className="form-grid">
+          <div className="form-control">
+            <Label className="form-label">Select Exam/Post *</Label>
+            {postsLoading ? (
+              <div>Loading posts...</div>
+            ) : (
+              <select
+                className="w-full border rounded px-3 py-2"
+                value={data.post_id || ''}
+                onChange={e => onChange('post_id', e.target.value)}
+                required
+              >
+                <option value="">-- Select --</option>
+                {posts.map(post => (
+                  <option key={post.id} value={post.id}>{post.post_name}</option>
+                ))}
+              </select>
+            )}
+          </div>
           <FormField
             label="First Name"
             icon={<User />}

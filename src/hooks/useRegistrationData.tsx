@@ -18,6 +18,7 @@ export interface PersonalInfoData {
   district?: string;
   pincode?: string;
   alternative_mobile?: string;
+  postId?: string;
 }
 
 export interface EducationData {
@@ -55,8 +56,56 @@ export interface RegistrationData {
 }
 
 export function useRegistrationData() {
+
+  // Ensures an application row exists for the user and selected post
+  
   const { user } = useAuth();
   const { toast } = useToast();
+
+  const ensureApplication = useCallback(async (postId: string) => {
+    if (!user?.id || !postId) return null;
+    // Check if application exists for user and post
+    const { data: existing, error: fetchError } = await supabase
+      .from('applications')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('post_id', postId)
+      .maybeSingle();
+    if (existing) {
+      setData(prev => ({
+        ...prev,
+        applicationInfo: existing
+      }));
+      return existing;
+    }
+    // Generate a unique application number
+    const applicationNumber = 'APP-' + Date.now();
+    // Create new application
+    const { data: created, error: insertError } = await supabase
+      .from('applications')
+      .insert({
+        user_id: user.id,
+        post_id: postId,
+        application_number: applicationNumber,
+        status: 'draft'
+      })
+      .select()
+      .single();
+    if (insertError) {
+      console.error('Error creating application:', insertError);
+      toast({
+        title: 'Error',
+        description: 'Failed to create application',
+        variant: 'destructive'
+      });
+      return null;
+    }
+    setData(prev => ({
+      ...prev,
+      applicationInfo: created
+    }));
+    return created;
+  }, [user?.id, toast]);
   
   const [data, setData] = useState<RegistrationData>({
     personalInfo: {},
@@ -305,13 +354,14 @@ export function useRegistrationData() {
   }, []);
 
   return {
-    data,
-    loading,
-    saving,
-    savePersonalInfo,
-    saveEducationInfo,
-    saveExperienceInfo,
-    updateLocalData,
-    loadRegistrationData
+  data,
+  loading,
+  saving,
+  savePersonalInfo,
+  saveEducationInfo,
+  saveExperienceInfo,
+  updateLocalData,
+  loadRegistrationData,
+  ensureApplication
   };
 }

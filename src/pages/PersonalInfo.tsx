@@ -28,6 +28,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
 const personalInfoSchema = z.object({
+  postId: z.string().min(1, "Please select a post"),
   firstName: z.string().min(1, "First name is required"),
   middleName: z.string().optional(),
   lastName: z.string().min(1, "Last name is required"),
@@ -53,6 +54,8 @@ export function PersonalInfo() {
   const { user, loading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [existingData, setExistingData] = useState<any>(null);
+  const [posts, setPosts] = useState<any[]>([]);
+  const [postsLoading, setPostsLoading] = useState(true);
 
   const form = useForm<PersonalInfoForm>({
     resolver: zodResolver(personalInfoSchema),
@@ -67,23 +70,39 @@ export function PersonalInfo() {
       navigate("/auth");
       return;
     }
-    
+    fetchPosts();
     fetchExistingData();
   }, [user, loading, navigate]);
 
+  const fetchPosts = async () => {
+    setPostsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('posts')
+        .select('id, post_name');
+      if (error) throw error;
+      setPosts(data || []);
+    } catch (error) {
+      console.log('Error fetching posts:', error);
+      
+      toast({ title: "Error", description: "Failed to load posts", variant: "destructive" });
+    } finally {
+      setPostsLoading(false);
+    }
+  };
+
   const fetchExistingData = async () => {
     if (!user) return;
-    
     try {
       const { data } = await supabase
         .from('personal_info')
         .select('*')
         .eq('user_id', user.id)
         .single();
-      
       if (data) {
         setExistingData(data);
         form.reset({
+          postId: 'post_id' in data ? String(data.post_id ?? "") : "",
           firstName: data.first_name,
           middleName: data.middle_name || "",
           lastName: data.last_name,
@@ -107,12 +126,11 @@ export function PersonalInfo() {
 
   const handleSubmit = async (data: PersonalInfoForm) => {
     if (!user) return;
-    
     setIsLoading(true);
-    
     try {
       const personalInfoData = {
         user_id: user.id,
+        post_id: data.postId,
         first_name: data.firstName,
         middle_name: data.middleName || null,
         last_name: data.lastName,
@@ -129,33 +147,52 @@ export function PersonalInfo() {
         alternative_mobile: data.alternativeMobile || null,
         registration_number: existingData?.registration_number || null
       };
-
+      // Save personal info
       if (existingData) {
-        // Update existing record
         const { error } = await supabase
           .from('personal_info')
           .update(personalInfoData)
           .eq('user_id', user.id);
-        
         if (error) throw error;
       } else {
-        // Insert new record with auto-generated registration number
         const { data: regNumber } = await supabase.rpc('generate_registration_number');
-        
         const { error } = await supabase
           .from('personal_info')
           .insert({ ...personalInfoData, registration_number: regNumber });
-        
         if (error) throw error;
       }
+
+      // Ensure application row exists for this user and post
+      const { data: existingApp, error: appFetchError } = await supabase
+        .from('applications')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('post_id', data.postId)
+        .single();
+
+      if (!existingApp) {
+        // Generate application_number using Supabase RPC
+        const { data: appNumber, error: appNumError } = await supabase.rpc('generate_registration_number');
+        if (appNumError || !appNumber) throw appNumError || new Error('Failed to generate application number');
+
+        // Insert new application row with all required fields
+        const { error: appInsertError } = await supabase
+          .from('applications')
+          .insert({
+            user_id: user.id,
+            post_id: data.postId,
+            application_number: appNumber,
+            status: 'draft',
+          });
+        if (appInsertError) throw appInsertError;
+      }
+      // Optionally, update application row if you want to track more info
 
       toast({
         title: "Success",
         description: "Personal information saved successfully",
       });
-      
       navigate("/education");
-      
     } catch (error: any) {
       toast({
         title: "Error",
@@ -167,7 +204,7 @@ export function PersonalInfo() {
     }
   };
 
-  if (loading) {
+  if (loading || postsLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -214,6 +251,26 @@ export function PersonalInfo() {
             </CardHeader>
             <CardContent>
               <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+                {/* Post Selection */}
+                <div className="space-y-2">
+                  <Label htmlFor="postId">Select Post/Exam *</Label>
+                  <Select
+                    value={form.watch("postId")}
+                    onValueChange={(value) => form.setValue("postId", value)}
+                  >
+                    <SelectTrigger className="form-glass">
+                      <SelectValue placeholder="Select post/exam" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {posts.map((post) => (
+                        <SelectItem key={post.id} value={post.id}>{post.post_name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {form.formState.errors.postId && (
+                    <p className="text-sm text-destructive">{form.formState.errors.postId.message}</p>
+                  )}
+                </div>
                 {/* Name Fields */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">

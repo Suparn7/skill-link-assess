@@ -13,6 +13,7 @@ import { UploadDocumentsForm } from "@/pages/UploadDocumentsForm";
 import { PaymentInfoForm } from "@/pages/PaymentInfoForm";
 import { FinalReviewForm } from "@/pages/FinalReviewForm";
 import { useRegistrationData } from "@/hooks/useRegistrationData";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -73,10 +74,24 @@ const REGISTRATION_STEPS = [
 ];
 
 export function ExamRegistration() {
+  const [posts, setPosts] = useState([]);
+  const [postsLoading, setPostsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchPosts() {
+      setPostsLoading(true);
+      const { data, error } = await supabase
+        .from('posts')
+        .select('id, post_name');
+      if (!error && data) setPosts(data);
+      setPostsLoading(false);
+    }
+    fetchPosts();
+  }, []);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  const { data, loading, saving, savePersonalInfo, saveEducationInfo, saveExperienceInfo, updateLocalData } = useRegistrationData();
+  const { data, loading, saving, savePersonalInfo, saveEducationInfo, saveExperienceInfo, updateLocalData, ensureApplication } = useRegistrationData();
   
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -127,8 +142,14 @@ export function ExamRegistration() {
   const handleSaveCurrentStep = async () => {
     try {
       switch (currentStep) {
-        case 1:
-          return await savePersonalInfo(data.personalInfo);
+        case 1: {
+          const personalSaved = await savePersonalInfo(data.personalInfo);
+          // Ensure application is created after personal info is saved and postId is available
+          if (personalSaved && data.personalInfo.postId) {
+            await ensureApplication((data.personalInfo as any).postId);
+          }
+          return personalSaved;
+        }
         case 2:
           return await saveEducationInfo(data.educationInfo);
         case 3:
@@ -158,11 +179,30 @@ export function ExamRegistration() {
     switch (currentStep) {
       case 1:
         return (
-          <PersonalInfoForm
-            data={data.personalInfo as any}
-            onChange={handlePersonalInfoChange}
-            onNext={handleNext}
-          />
+          <div>
+            <PersonalInfoForm
+              data={data.personalInfo as any}
+              onChange={handlePersonalInfoChange}
+              onNext={handleNext}
+            />
+            <div className="mt-6">
+              <label className="block font-medium mb-2">Select Exam/Post</label>
+              {postsLoading ? (
+                <div>Loading posts...</div>
+              ) : (
+                <select
+                  className="w-full border rounded px-3 py-2"
+                  value={(data.personalInfo as any).postId || ''}
+                  onChange={e => handlePersonalInfoChange('postId', e.target.value)}
+                >
+                  <option value="">-- Select --</option>
+                  {posts.map(post => (
+                    <option key={post.id} value={post.id}>{post.post_name}</option>
+                  ))}
+                </select>
+              )}
+            </div>
+          </div>
         );
       case 2:
         return (

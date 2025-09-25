@@ -21,6 +21,7 @@ import { AdminDashboard } from "./pages/AdminDashboard";
 import { DocumentsUpload } from "./pages/DocumentsUpload";
 import { Payment } from "./pages/Payment";
 import { FinalPreview } from "./pages/FinalPreview";
+import FinalSubmit from "./pages/FinalSubmit";
 import { ExamRegistration } from "./pages/ExamRegistration";
 import { EnhancedAuth } from "./pages/EnhancedAuth";
 import { PhoneVerification } from "./pages/PhoneVerification";
@@ -60,6 +61,7 @@ const App = () => (
             <Route path="/documents" element={<DocumentsUpload />} />
             <Route path="/payment" element={<Payment />} />
             <Route path="/final-preview" element={<FinalPreview />} />
+            <Route path="/final-submit" element={<FinalSubmit />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
