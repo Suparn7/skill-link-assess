@@ -13,7 +13,25 @@ export type Database = {
     PostgrestVersion: "13.0.5"
   }
   public: {
-    Tables: {
+  Tables: {
+      category_payments: {
+        Row: {
+          id: string;
+          category: string;
+          amount: number;
+        }
+        Insert: {
+          id?: string;
+          category: string;
+          amount: number;
+        }
+        Update: {
+          id?: string;
+          category?: string;
+          amount?: number;
+        }
+        Relationships: []
+      },
       applications: {
         Row: {
           application_number: string

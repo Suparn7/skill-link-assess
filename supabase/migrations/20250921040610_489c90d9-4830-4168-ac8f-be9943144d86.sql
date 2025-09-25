@@ -145,7 +145,8 @@ ALTER TABLE public.documents ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can view their own profile" ON public.profiles FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can update their own profile" ON public.profiles FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "Users can insert their own profile" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Admins can view all profiles" ON public.profiles FOR SELECT USING (EXISTS (SELECT 1 FROM public.profiles WHERE user_id = auth.uid() AND role = 'admin'));
+-- Fixed: Avoid infinite recursion by using JWT custom claim for admin role
+CREATE POLICY "Admins can view all profiles" ON public.profiles FOR SELECT USING (auth.role() = 'admin');
 
 -- Create RLS policies for posts
 CREATE POLICY "Anyone can view active posts" ON public.posts FOR SELECT USING (is_active = true);

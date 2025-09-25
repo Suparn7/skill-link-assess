@@ -67,14 +67,21 @@ export function Education() {
 
   const fetchEducationData = async () => {
     if (!user) return;
-    
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('educational_qualifications')
         .select('*')
         .eq('user_id', user.id)
         .order('passing_year', { ascending: false });
-      
+      if (error) {
+        console.error('Supabase fetch error:', error);
+        toast({
+          title: 'Error',
+          description: error.message || 'Failed to fetch education data',
+          variant: 'destructive',
+        });
+        return;
+      }
       if (data) {
         const formattedData = data.map(item => ({
           id: item.id,
@@ -87,17 +94,21 @@ export function Education() {
           rollNumber: item.roll_number || undefined,
         }));
         setEducations(formattedData);
+        console.log('Fetched educations:', formattedData);
       }
     } catch (error) {
       console.error('Error fetching education data:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to fetch education data',
+        variant: 'destructive',
+      });
     }
   };
 
   const handleAddEducation = async (data: EducationForm) => {
     if (!user) return;
-    
     setIsLoading(true);
-    
     try {
       const educationData = {
         user_id: user.id,
@@ -109,40 +120,69 @@ export function Education() {
         subjects: data.subjects || null,
         roll_number: data.rollNumber || null,
       };
-
       if (editingIndex !== null) {
         // Update existing education
         const educationToUpdate = educations[editingIndex];
-        const { error } = await supabase
+        const { data: updateData, error } = await supabase
           .from('educational_qualifications')
           .update(educationData)
-          .eq('id', educationToUpdate.id);
-        
+          .eq('id', educationToUpdate.id)
+          .select();
         if (error) throw error;
-        
         setEditingIndex(null);
+        // Optimistically update state
+        if (updateData && updateData.length > 0) {
+          const updatedList = [...educations];
+          updatedList[editingIndex] = {
+            ...updateData[0],
+            qualificationType: updateData[0].qualification_type,
+            boardUniversity: updateData[0].board_university,
+            passingYear: updateData[0].passing_year,
+            percentage: updateData[0].percentage || undefined,
+            grade: updateData[0].grade || undefined,
+            subjects: updateData[0].subjects || undefined,
+            rollNumber: updateData[0].roll_number || undefined,
+          };
+          setEducations(updatedList);
+        }
+        console.log('Updated education:', updateData);
       } else {
         // Add new education
-        const { error } = await supabase
+        const { data: insertData, error } = await supabase
           .from('educational_qualifications')
-          .insert(educationData);
-        
+          .insert(educationData)
+          .select();
         if (error) throw error;
+        // Optimistically update state
+        if (insertData && insertData.length > 0) {
+          setEducations(prev => [
+            {
+              id: insertData[0].id,
+              qualificationType: insertData[0].qualification_type,
+              boardUniversity: insertData[0].board_university,
+              passingYear: insertData[0].passing_year,
+              percentage: insertData[0].percentage || undefined,
+              grade: insertData[0].grade || undefined,
+              subjects: insertData[0].subjects || undefined,
+              rollNumber: insertData[0].roll_number || undefined,
+            },
+            ...prev,
+          ]);
+        }
+        console.log('Inserted education:', insertData);
       }
-
       form.reset();
       fetchEducationData();
-      
       toast({
-        title: "Success",
-        description: editingIndex !== null ? "Education updated successfully" : "Education added successfully",
+        title: 'Success',
+        description: editingIndex !== null ? 'Education updated successfully' : 'Education added successfully',
       });
-      
-    } catch (error: any) {
+    } catch (error) {
+      console.error('Error saving education:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to save education",
-        variant: "destructive"
+        title: 'Error',
+        description: error.message || 'Failed to save education',
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
