@@ -251,16 +251,32 @@ export function Dashboard() {
                         <div className="flex justify-between items-start mb-2">
                           <h4 className="font-medium text-sm">{app.posts?.post_name}</h4>
                           <Badge variant={
-                            app.status === 'completed' ? 'default' :
-                            app.status === 'submitted' ? 'secondary' :
+                            app.status === 'submitted' ? 'default' :
+                            app.status === 'completed' ? 'secondary' :
+                            app.status === 'payment_completed' ? 'secondary' :
                             'outline'
                           }>
                             {app.status}
                           </Badge>
                         </div>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-muted-foreground mb-2">
                           Application #: {app.application_number}
                         </p>
+                        {app.status === 'submitted' && (
+                          <p className="text-xs text-success">
+                            ✓ Submitted - No edits allowed
+                          </p>
+                        )}
+                        {app.status !== 'submitted' && (
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            onClick={() => navigate('/exam-registration')}
+                            className="text-xs"
+                          >
+                            Continue Registration
+                          </Button>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -269,12 +285,12 @@ export function Dashboard() {
                     <Calendar className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                     <p className="text-sm text-muted-foreground">No applications yet</p>
                     <Button 
-                      onClick={() => navigate('/apply')}
+                      onClick={() => navigate('/verify-phone')}
                       variant="default"
                       size="sm"
                       className="mt-3"
                     >
-                      Apply Now
+                      Start Registration
                     </Button>
                   </div>
                 )}

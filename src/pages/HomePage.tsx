@@ -150,7 +150,7 @@ export function HomePage() {
               </div>
             </motion.div>
 
-            {/* Login Card */}
+            {/* Login Info Card */}
             <motion.div 
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
@@ -160,75 +160,41 @@ export function HomePage() {
               <Card className="hero-card shadow-2xl">
                 <CardHeader className="text-center">
                   <CardTitle className="text-2xl font-heading text-gradient-primary">
-                    {t('home.loginTitle')}
+                    Candidate Login
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="registrationNo" className="text-sm font-medium">
-                        {t('home.registrationNo')}
-                      </Label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="registrationNo"
-                          type="text"
-                          placeholder="Enter registration number"
-                          value={loginData.registrationNo}
-                          onChange={(e) => setLoginData({...loginData, registrationNo: e.target.value})}
-                          className="pl-10 form-glass"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="password" className="text-sm font-medium">
-                        {t('home.password')}
-                      </Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="password"
-                          type={showPassword ? "text" : "password"}
-                          placeholder="Enter password"
-                          value={loginData.password}
-                          onChange={(e) => setLoginData({...loginData, password: e.target.value})}
-                          className="pl-10 pr-10 form-glass"
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          {showPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
+                  <div className="text-center space-y-4">
+                    <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+                      <h3 className="font-semibold text-primary mb-2">New Candidates</h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        First time registering? Create your account and complete exam registration.
+                      </p>
+                      <Link to="/auth">
+                        <Button variant="default" className="w-full">
+                          Sign Up / Create Account
+                          <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
-                      </div>
+                      </Link>
+                    </div>
+
+                    <div className="bg-secondary/10 border border-secondary/20 rounded-lg p-4">
+                      <h3 className="font-semibold text-secondary mb-2">Existing Candidates</h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Already have an account? Login to view your applications and status.
+                      </p>
+                      <Link to="/auth">
+                        <Button variant="secondary" className="w-full">
+                          Login with Email & Password
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </Link>
                     </div>
                   </div>
 
-                  <Button variant="gov" size="xl" className="w-full">
-                    {t('home.loginButton')}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-
                   <div className="text-center">
-                    <Link to="/register">
-                      <Button variant="link" className="text-primary">
-                        {t('home.newRegistration')}
-                      </Button>
-                    </Link>
-                  </div>
-
-                  <div className="text-center">
-                    <p className="text-sm text-muted-foreground">
-                      Don't have an account? Register now to get started.
+                    <p className="text-xs text-muted-foreground">
+                      After registration, you'll receive an application number to track your progress.
                     </p>
                   </div>
                 </CardContent>

@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Header } from "@/components/layout/Header";
 import { RegistrationStepper } from "@/components/registration/RegistrationStepper";
 import { ProtectedRoute } from "@/components/registration/ProtectedRoute";
+import { ApplicationStatusGuard } from "@/components/registration/ApplicationStatusGuard";
 import { PersonalInfoForm } from "@/pages/PersonalInfoForm";
 import { OtherDetailsForm } from "@/pages/OtherDetailsForm";
 import { ExperienceInfoForm } from "@/pages/ExperienceInfoForm";
@@ -16,6 +17,7 @@ import { useRegistrationData } from "@/hooks/useRegistrationData";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { usePerformanceOptimization } from "@/hooks/usePerformanceOptimization";
 import { 
   User, 
   GraduationCap, 
@@ -76,22 +78,52 @@ const REGISTRATION_STEPS = [
 export function ExamRegistration() {
   const [posts, setPosts] = useState([]);
   const [postsLoading, setPostsLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchPosts() {
-      setPostsLoading(true);
-      const { data, error } = await supabase
-        .from('posts')
-        .select('id, post_name');
-      if (!error && data) setPosts(data);
-      setPostsLoading(false);
-    }
-    fetchPosts();
-  }, []);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   const { data, loading, saving, savePersonalInfo, saveEducationInfo, saveExperienceInfo, updateLocalData, ensureApplication } = useRegistrationData();
+  const { debounce, batchOperations, createCache } = usePerformanceOptimization();
+
+  // Create cache for posts to reduce database calls
+  const postsCache = createCache();
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      const cacheKey = 'active_posts';
+      const cachedPosts = postsCache.get(cacheKey);
+      
+      if (cachedPosts) {
+        setPosts(cachedPosts);
+        setPostsLoading(false);
+        return;
+      }
+
+      setPostsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('posts')
+          .select('id, post_name, post_code, is_active')
+          .eq('is_active', true)
+          .order('post_name');
+        
+        if (!error && data) {
+          setPosts(data);
+          postsCache.set(cacheKey, data);
+        }
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load exam posts",
+          variant: "destructive"
+        });
+      } finally {
+        setPostsLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, []);
   
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -242,13 +274,7 @@ export function ExamRegistration() {
         return (
           <FinalReviewForm
             data={{...data.personalInfo, ...data.applicationInfo}}
-            onSubmit={() => {
-              toast({
-                title: "Application Submitted!",
-                description: "Your exam registration has been submitted successfully."
-              });
-              // Navigate to dashboard or success page
-            }}
+            onSubmit={handleSubmitRegistration}
           />
         );
       default:
@@ -269,10 +295,11 @@ export function ExamRegistration() {
 
   return (
     <ProtectedRoute requirePhoneVerification={true}>
-      <div className="min-h-screen bg-background">
-        <Header />
-        
-        <main className="container mx-auto px-4 py-8">
+      <ApplicationStatusGuard allowedStatuses={['draft', 'payment_pending', 'document_pending', 'payment_completed']}>
+        <div className="min-h-screen bg-background">
+          <Header />
+          
+          <main className="container mx-auto px-4 py-8">
           {/* Header Section */}
           <div className="text-center mb-8">
             <motion.div
@@ -385,8 +412,9 @@ export function ExamRegistration() {
               )}
             </div>
           </Card>
-        </main>
-      </div>
+          </main>
+        </div>
+      </ApplicationStatusGuard>
     </ProtectedRoute>
   );
 }
