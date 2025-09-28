@@ -1,0 +1,273 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Assessment Screening Platform Design System - Glassmorphism & Government Theme */
+
+@layer base {
+  :root {
+    /* Government & Professional Brand Colors */
+    --primary: 210 100% 45%; /* Rich Blue */
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 210 100% 60%;
+    --primary-dark: 210 100% 35%;
+    
+    --secondary: 24 100% 50%; /* Saffron Orange */
+    --secondary-foreground: 0 0% 100%;
+    --secondary-light: 24 100% 65%;
+    
+    --success: 142 76% 36%; /* Professional Green */
+    --success-foreground: 0 0% 100%;
+    --success-light: 142 76% 50%;
+    
+    --warning: 45 93% 58%; /* Golden Yellow */
+    --warning-foreground: 222 84% 5%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    /* Neutral System */
+    --background: 220 15% 97%;
+    --foreground: 222 84% 5%;
+    
+    --muted: 220 15% 95%;
+    --muted-foreground: 215 16% 47%;
+    
+    --accent: 210 40% 95%;
+    --accent-foreground: 222 47% 11%;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 222 84% 5%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 84% 5%;
+    
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 210 100% 45%;
+    
+    /* Glass Effects */
+    --glass-bg: 255 255 255 / 0.25;
+    --glass-border: 255 255 255 / 0.18;
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    --glass-backdrop: blur(4px);
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(210 100% 45%) 0%, hsl(210 100% 35%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(24 100% 50%) 0%, hsl(24 100% 40%) 100%);
+    --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(210 100% 45%) 0%, hsl(210 100% 35%) 50%, hsl(24 100% 50%) 100%);
+    
+    /* Spacing & Layout */
+    --radius: 0.75rem;
+    --header-height: 4rem;
+    --sidebar-width: 16rem;
+    
+    /* Animation */
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dark {
+    /* Dark Mode Government Theme */
+    --background: 222 84% 3%;
+    --foreground: 210 40% 98%;
+    
+    --primary: 210 100% 55%;
+    --primary-foreground: 222 84% 5%;
+    --primary-light: 210 100% 70%;
+    --primary-dark: 210 100% 40%;
+    
+    --secondary: 24 100% 60%;
+    --secondary-foreground: 222 84% 5%;
+    --secondary-light: 24 100% 75%;
+    
+    --success: 142 76% 45%;
+    --success-light: 142 76% 60%;
+    
+    --muted: 217 32% 15%;
+    --muted-foreground: 215 20% 65%;
+    
+    --accent: 217 32% 17%;
+    --accent-foreground: 210 40% 98%;
+    
+    --card: 222 84% 5%;
+    --card-foreground: 210 40% 98%;
+    
+    --popover: 222 84% 5%;
+    --popover-foreground: 210 40% 98%;
+    
+    --border: 217 32% 17%;
+    --input: 217 32% 17%;
+    
+    /* Dark Glass Effects */
+    --glass-bg: 0 0 0 / 0.4;
+    --glass-border: 255 255 255 / 0.1;
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+    
+    /* Dark Gradients */
+    --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(210 100% 55%) 0%, hsl(210 100% 45%) 50%, hsl(24 100% 60%) 100%);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    background-image: 
+      radial-gradient(circle at 20% 80%, hsla(210, 100%, 45%, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, hsla(24, 100%, 50%, 0.1) 0%, transparent 50%);
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+  }
+}
+
+@layer components {
+  /* Glass Morphism Components */
+  .glass {
+    background: rgba(var(--glass-bg));
+    backdrop-filter: var(--glass-backdrop);
+    -webkit-backdrop-filter: var(--glass-backdrop);
+    border: 1px solid rgba(var(--glass-border));
+    box-shadow: var(--glass-shadow);
+  }
+  
+  .glass-card {
+    @apply glass rounded-xl p-6;
+  }
+  
+  .glass-nav {
+    @apply glass rounded-lg p-4;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+  }
+  
+  /* Government Badge */
+  .gov-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
+    background: var(--gradient-secondary);
+    color: white;
+    box-shadow: 0 2px 8px rgba(24, 100, 50, 0.3);
+  }
+  
+  /* Hero Elements */
+  .hero-title {
+    @apply text-4xl md:text-6xl font-bold tracking-tight;
+    background: var(--gradient-hero);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .hero-card {
+    @apply glass-card border-white/20;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
+  }
+  
+  /* Form Elements */
+  .form-glass {
+    @apply glass rounded-lg;
+    background: rgba(255, 255, 255, 0.9);
+  }
+  
+  /* Animations */
+  .float-animation {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .glow {
+    box-shadow: 0 0 20px rgba(var(--primary), 0.3);
+  }
+  
+  .hover-lift {
+    transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  }
+}
+
+@layer utilities {
+  .text-gradient-primary {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .text-gradient-secondary {
+    background: var(--gradient-secondary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .bg-gradient-primary {
+    background: var(--gradient-primary);
+  }
+  
+  .bg-gradient-secondary {
+    background: var(--gradient-secondary);
+  }
+  
+  .bg-gradient-glass {
+    background: var(--gradient-glass);
+  }
+  
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
+}
+
+.shimmer {
+  animation: shimmer 2s infinite linear;
+  background: linear-gradient(to right, #eff6ff 4%, #dbeafe 25%, #eff6ff 36%);
+  background-size: 1000px 100%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
