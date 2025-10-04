@@ -7,12 +7,6 @@ import { Header } from "@/components/layout/Header";
 import { RegistrationStepper } from "@/components/registration/RegistrationStepper";
 import { ProtectedRoute } from "@/components/registration/ProtectedRoute";
 import { ApplicationStatusGuard } from "@/components/registration/ApplicationStatusGuard";
-import { PersonalInfoForm } from "@/pages/PersonalInfoForm";
-import { OtherDetailsForm } from "@/pages/OtherDetailsForm";
-import { ExperienceInfoForm } from "@/pages/ExperienceInfoForm";
-import { UploadDocumentsForm } from "@/pages/UploadDocumentsForm";
-import { PaymentInfoForm } from "@/pages/PaymentInfoForm";
-import { FinalReviewForm } from "@/pages/FinalReviewForm";
 import { useRegistrationData } from "@/hooks/useRegistrationData";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -92,6 +86,8 @@ const REGISTRATION_STEPS = [
 
 export function ExamRegistration() {
   const [currentStep, setCurrentStep] = useState(1);
+
+  // Removed stepper-next event listener. Navigation is handled by setCurrentStep and handleNext.
   const [posts, setPosts] = useState([]);
   const [postsLoading, setPostsLoading] = useState(true);
   const navigate = useNavigate();

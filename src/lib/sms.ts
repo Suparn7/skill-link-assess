@@ -2,10 +2,7 @@
 const SMS_API_CONFIG = {
   apiKey: 'FKulmoGm5kqrMrYu9pb4Tg',
   senderId: 'IITSPL',
-  channel: 'Trans',
-  route: '4',
-  peId: '1001681630089893521',
-  baseUrl: 'http://cloud.smsindiahub.in/api/mt/SendSMS'
+  baseUrl: 'https://cloud.smsindiahub.in/vendorsms/pushsms.aspx'
 };
 
 // SMS Templates
@@ -42,21 +39,18 @@ export class SMSService {
   static async sendSMS({ mobile, message, templateId }: SMSParams): Promise<boolean> {
     try {
       const formattedMobile = this.formatMobile(mobile);
-      const encodedMessage = encodeURIComponent(message);
-
-      const url = `${SMS_API_CONFIG.baseUrl}?APIKey=${SMS_API_CONFIG.apiKey}&senderid=${SMS_API_CONFIG.senderId}&channel=${SMS_API_CONFIG.channel}&DCS=0&flashsms=0&number=${formattedMobile}&text=${encodedMessage}&route=${SMS_API_CONFIG.route}&PEId=${SMS_API_CONFIG.peId}&TemplateId=${templateId}`;
-
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      // Send SMS via Supabase Edge Function
+      const response = await fetch('https://hiodppambsqewyladrfs.supabase.co/functions/v1/send-sms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mobile: formattedMobile,
+          message
+        })
       });
-
-      const result = await response.text();
-      console.log('SMS API Response:', result);
-
-      return response.ok;
+      const result = await response.json();
+      console.log('Supabase SMS Function Response:', result);
+      return result.success;
     } catch (error) {
       console.error('SMS sending failed:', error);
       return false;

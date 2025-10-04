@@ -192,10 +192,7 @@ export function PersonalInfo() {
         title: "Success",
         description: "Personal information saved successfully",
       });
-      // Instead of navigating, trigger stepper next step via callback
-      if (typeof window !== 'undefined' && window.dispatchEvent) {
-        window.dispatchEvent(new CustomEvent('stepper-next'));
-      }
+      // TODO: Use parent callback or context to advance step, not window event
     } catch (error: any) {
       toast({
         title: "Error",

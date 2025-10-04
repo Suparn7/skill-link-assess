@@ -54,7 +54,11 @@ export function PhoneVerification() {
         .eq('user_id', user.id)
         .single();
 
+      console.log('Profile fetched from Supabase:', profile);
+      console.log('phone_verified value:', profile?.phone_verified);
+
       if (profile?.phone_verified) {
+        console.log('User is verified, navigating to /register');
         navigate('/register');
       } else if (profile?.mobile_number) {
         setMobile(profile.mobile_number);
