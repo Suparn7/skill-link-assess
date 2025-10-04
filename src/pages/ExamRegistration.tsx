@@ -371,17 +371,15 @@ export function ExamRegistration() {
               </div>
 
               {/* Step Content */}
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentStep}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {renderStepContent()}
-                </motion.div>
-              </AnimatePresence>
+              <motion.div
+                key={currentStep}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                {renderStepContent()}
+              </motion.div>
 
               {/* Navigation Buttons */}
               {currentStep !== 1 && (
