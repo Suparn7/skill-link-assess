@@ -185,20 +185,12 @@ export function ExamRegistration() {
   };
 
   const handleNext = async () => {
-    if (currentStep < 6) {
-      if (currentStep === 4) {
-        // For Experience step, always advance to Documents
-        await handleSaveCurrentStep(); // Optionally still save
-        setCurrentStep(prev => prev + 1);
-      } else {
-        const saveSuccess = await handleSaveCurrentStep();
-        if (saveSuccess) {
-          setCurrentStep(prev => prev + 1);
-        }
-      }
-    } else if (currentStep === 6) {
-      // Payment step: go to FinalPreview (step 7)
-      setCurrentStep(7);
+    // Save current step data (but don't block progression)
+    await handleSaveCurrentStep();
+    
+    // Always allow moving to next step
+    if (currentStep < 7) {
+      setCurrentStep(prev => prev + 1);
     }
   };
 
@@ -212,40 +204,50 @@ export function ExamRegistration() {
     try {
       switch (currentStep) {
         case 1: {
-          const personalSaved = await savePersonalInfo(data.personalInfo);
-          if (personalSaved && data.personalInfo.post_id) {
-            await ensureApplication((data.personalInfo as any).postId);
+          // Save personal info - don't block if it fails
+          try {
+            await savePersonalInfo(data.personalInfo);
+          } catch (err) {
+            console.log('Personal info save error:', err);
           }
-          return personalSaved;
+          return true;
         }
         case 2: {
-          // Save Other Details to new table
-          const otherDetails = (data as any).otherDetails || {};
-          // @ts-ignore: bypass type error for upsert
-          const { error } = await (supabase as any)
-            .from('other_details')
-            .upsert({
-              user_id: user?.id,
-              ...otherDetails
-            });
-          if (error) throw error;
+          // Save Other Details - don't block if it fails
+          try {
+            const otherDetails = (data as any).otherDetails || {};
+            const { error } = await supabase
+              .from('other_details')
+              .upsert({
+                user_id: user?.id,
+                ...otherDetails
+              });
+            if (error) console.log('Other details save error:', error);
+          } catch (err) {
+            console.log('Other details save error:', err);
+          }
           return true;
         }
         case 3:
-          return await saveEducationInfo(data.educationInfo);
+          try {
+            await saveEducationInfo(data.educationInfo);
+          } catch (err) {
+            console.log('Education save error:', err);
+          }
+          return true;
         case 4:
-          return await saveExperienceInfo(data.experienceInfo);
+          try {
+            await saveExperienceInfo(data.experienceInfo);
+          } catch (err) {
+            console.log('Experience save error:', err);
+          }
+          return true;
         default:
           return true;
       }
     } catch (error) {
       console.error('Error saving step:', error);
-      toast({
-        title: "Error Saving Data",
-        description: "Please try again",
-        variant: "destructive"
-      });
-      return false;
+      return true; // Still return true to allow navigation
     }
   };
 
@@ -382,8 +384,8 @@ export function ExamRegistration() {
               </motion.div>
 
               {/* Navigation Buttons */}
-              {currentStep !== 1 && (
-                <div className="flex justify-between mt-8">
+              <div className="flex justify-between mt-8">
+                {currentStep > 1 && (
                   <Button
                     variant="outline"
                     onClick={handlePrevious}
@@ -393,37 +395,30 @@ export function ExamRegistration() {
                     <ArrowLeft className="w-4 h-4" />
                     Previous
                   </Button>
-
-                  {currentStep === 6 ? (
-                    <Button
-                      onClick={handleNext}
-                      disabled={saving || !(data.paymentDetails?.payment_status === 'completed')}
-                      className="flex items-center gap-2"
-                    >
-                      Next
-                      <ArrowRight className="w-4 h-4" />
-                    </Button>
-                  ) : currentStep === 7 ? (
-                    <Button
-                      onClick={handleNext}
-                      disabled={saving}
-                      className="flex items-center gap-2"
-                    >
-                      Submit Application
-                      <ArrowRight className="w-4 h-4" />
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={handleNext}
-                      disabled={saving}
-                      className="flex items-center gap-2"
-                    >
-                      Next
-                      <ArrowRight className="w-4 h-4" />
-                    </Button>
-                  )}
-                </div>
-              )}
+                )}
+                
+                {currentStep < 7 && (
+                  <Button
+                    onClick={handleNext}
+                    disabled={saving}
+                    className="flex items-center gap-2 ml-auto"
+                  >
+                    {saving ? "Saving..." : "Next"}
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                )}
+                
+                {currentStep === 7 && (
+                  <Button
+                    onClick={() => navigate('/final-submit')}
+                    disabled={saving}
+                    className="flex items-center gap-2 ml-auto"
+                  >
+                    Submit Application
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
             </div>
           </Card>
           </main>
